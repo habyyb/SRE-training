@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: es
+spec:
+  selector:
+    matchLabels:
+      app: es
+  template:
+    metadata:
+      labels:
+        app: es
+    spec:
+      containers:
+      - env:
+        - name: discovery.type
+          value: docker-desktop
+        - name: ES_JAVA_OPTS
+          value: -Xms512m -Xmx512m
+        image: {{.Values.image}}
+        imagePullPolicy: Always
+        name: es
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 9200
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: esdata1
+      restartPolicy: Always
+      volumes:
+      - name: esdata1
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: es
+spec:
+  ports:
+  - name: "9200"
+    port: 9200
+    targetPort: 9200
+  selector:
+    app: es
